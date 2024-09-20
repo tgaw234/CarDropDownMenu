@@ -23,8 +23,7 @@ namespace CarDropDownMenu.Controllers
         [HttpGet("GetCarBrand")]
         public async Task<ActionResult<IEnumerable<CarBrand>>> GetCarBrands()
         {
-            // Fetch car brands from the CarDb database
-            var carBrands = await _context.Carbrands.ToListAsync();
+            var carBrands = await _context.CarBrands.ToListAsync();
 
             if (carBrands == null || carBrands.Count == 0)
             {
@@ -38,8 +37,12 @@ namespace CarDropDownMenu.Controllers
         [HttpGet("GetCarMake/{brand}")]
         public async Task<ActionResult<IEnumerable<CarMake>>> GetCarMake(string brand)
         {
-            // Find the car brand by name from the CarDb database
-            var carBrand = await _context.Carbrands
+            if (string.IsNullOrEmpty(brand))
+            {
+                return BadRequest("Brand name is required.");
+            }
+
+            var carBrand = await _context.CarBrands
                 .FirstOrDefaultAsync(b => b.BrandName.ToLower() == brand.ToLower());
 
             if (carBrand == null)
@@ -47,7 +50,6 @@ namespace CarDropDownMenu.Controllers
                 return NotFound($"Car brand '{brand}' not found.");
             }
 
-            // Fetch car makes associated with the car brand from the CarDb database
             var carMakes = await _context.CarMakes
                 .Where(make => make.CarBrandId == carBrand.Id)
                 .ToListAsync();
@@ -69,7 +71,7 @@ namespace CarDropDownMenu.Controllers
                 return BadRequest("Missing required rental submission data.");
             }
 
-            // Additional logic to process or save the submission to CarDb could go here
+            // Business logic or save data to the database can be added here
 
             return Ok(new
             {

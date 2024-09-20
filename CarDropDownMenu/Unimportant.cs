@@ -8,9 +8,9 @@ using CarDropDownMenu.Data;
 
 namespace CarDropDownMenu
 {
-    public class Startup
+    public class Unimportant
     {
-        public Startup(IConfiguration configuration)
+        public Unimportant(IConfiguration configuration)
         {
             Configuration = configuration;
         }

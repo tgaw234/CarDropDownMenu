@@ -1,10 +1,10 @@
-﻿namespace CarRentalService.Models
+﻿namespace CarDropDownMenu.Models
 {
     public class RentalSubmission
     {
-        public string Name { get; set; }
-        public string CarBrand { get; set; }
+        public string CarBrands { get; set; }
         public string CarMake { get; set; }
+        public string? CarBrand { get; internal set; }
     }
 }
 

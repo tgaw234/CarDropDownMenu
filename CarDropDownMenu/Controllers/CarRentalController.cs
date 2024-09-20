@@ -1,45 +1,60 @@
 using Microsoft.AspNetCore.Mvc;
-using CarRentalService.Models;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using CarDropDownMenu.Models;
+using CarDropDownMenu.Data;
+using Microsoft.EntityFrameworkCore;
 
-namespace CarRentalService.Controllers
+namespace CarDropDownMenu.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class CarRentalController : ControllerBase
     {
-        // Mock data for Car Brands
-        private readonly List<CarBrand> _carBrands = new List<CarBrand>
-        {
-            new CarBrand { Brand = "Toyota" },
-            new CarBrand { Brand = "BMW" },
-            new CarBrand { Brand = "Ford" }
-        };
+        private readonly CarRentalDbContext _context;
 
-        // Mock data for Car Makes
-        private readonly List<CarMake> _carMakes = new List<CarMake>
+        public CarRentalController(CarRentalDbContext context)
         {
-            new CarMake { Brand = "Toyota", Model = "Corolla", },
-            new CarMake { Brand = "BMW", Model = "X5" },
-            new CarMake { Brand = "Ford", Model = "Mustang" }
-        };
+            _context = context;
+        }
 
         // GET: api/CarRental/GetCarBrand
         [HttpGet("GetCarBrand")]
-        public ActionResult<IEnumerable<CarBrand>> GetCarBrand()
+        public async Task<ActionResult<IEnumerable<CarBrand>>> GetCarBrands()
         {
-            return Ok(_carBrands);
+            // Fetch car brands from the CarDb database
+            var carBrands = await _context.Carbrands.ToListAsync();
+
+            if (carBrands == null || carBrands.Count == 0)
+            {
+                return NotFound("No car brands found.");
+            }
+
+            return Ok(carBrands);
         }
 
-        // GET: api/CarRental/GetCarMake
-        [HttpGet("GetCarMake")]
-        public ActionResult<IEnumerable<CarMake>> GetCarMake(string brand)
+        // GET: api/CarRental/GetCarMake/{brand}
+        [HttpGet("GetCarMake/{brand}")]
+        public async Task<ActionResult<IEnumerable<CarMake>>> GetCarMake(string brand)
         {
-            var carMakes = _carMakes.FindAll(m => m.Brand.ToLower() == brand.ToLower());
+            // Find the car brand by name from the CarDb database
+            var carBrand = await _context.Carbrands
+                .FirstOrDefaultAsync(b => b.BrandName.ToLower() == brand.ToLower());
+
+            if (carBrand == null)
+            {
+                return NotFound($"Car brand '{brand}' not found.");
+            }
+
+            // Fetch car makes associated with the car brand from the CarDb database
+            var carMakes = await _context.CarMakes
+                .Where(make => make.CarBrandId == carBrand.Id)
+                .ToListAsync();
+
             if (carMakes == null || carMakes.Count == 0)
             {
-                return NotFound("Car makes not found for the specified brand.");
+                return NotFound($"No car makes found for the brand '{brand}'.");
             }
 
             return Ok(carMakes);
@@ -47,17 +62,14 @@ namespace CarRentalService.Controllers
 
         // POST: api/CarRental/PostSubmit
         [HttpPost("PostSubmit")]
-        public ActionResult PostSubmit([FromBody] RentalSubmission submission)
+        public async Task<ActionResult> PostSubmit([FromBody] RentalSubmission submission)
         {
-            if (string.IsNullOrEmpty(submission.Name) ||
-                string.IsNullOrEmpty(submission.CarBrand) ||
-                string.IsNullOrEmpty(submission.CarMake))
+            if (string.IsNullOrEmpty(submission.CarBrand) || string.IsNullOrEmpty(submission.CarMake))
             {
                 return BadRequest("Missing required rental submission data.");
             }
 
-            // Here, you'd normally save the data or trigger a process.
-            // For the example, we'll just return a success response.
+            // Additional logic to process or save the submission to CarDb could go here
 
             return Ok(new
             {

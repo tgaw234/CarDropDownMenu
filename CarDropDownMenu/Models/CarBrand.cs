@@ -2,6 +2,10 @@
 {
     public class CarBrand
     {
-        public string Brand { get; set; }
+        public int Id { get; set; }
+        public int CarBrandId { get; set; }
+        public string BrandName { get; set; }
+        public bool ActiveFlag { get; set; }
+
     }
 }

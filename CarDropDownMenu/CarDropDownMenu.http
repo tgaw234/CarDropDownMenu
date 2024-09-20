@@ -1,0 +1,6 @@
+@CarDropDownMenu_HostAddress = http://localhost:5222
+
+GET {{CarDropDownMenu_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
